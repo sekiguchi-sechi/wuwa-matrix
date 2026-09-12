@@ -3,7 +3,7 @@
 サーバー費用なしの2本構成
 - 管理用: Claude Artifact https://claude.ai/code/artifact/8568be50-670a-4d19-bd60-6980a86bda35 （db/assets/downloads。マスタ編集・Claude連携・定期タスクの書込先）
 - 提供用: GitHub Pages https://sekiguchi-sechi.github.io/wuwa-matrix/ （リポジトリ sekiguchi-sechi/wuwa-matrix の main ブランチ `docs/` を公開。静的・マスタ埋め込み・編成はlocalStorage）
-- 旧提供用 Artifact https://claude.ai/code/artifact/ede260f8-4dcd-4cae-85f2-383bab5c270b は不要（削除可）
+- 旧提供用 Artifact は 2026-09-12 に削除済み
 - GitHub は gh CLI（sekiguchi-sechi でログイン済み、`C:\Program Files\GitHub CLI\gh.exe`）で操作
 
 ## ファイル
