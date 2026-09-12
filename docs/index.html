@@ -236,7 +236,7 @@ const DEFAULT_DATA = {"characters": [{"id": "060", "name": "鎖暝", "attr": "�
 const MODE = "public";   // "admin" = 管理用（db/assets連携・マスタ編集） / "public" = 提供用（内蔵データのみ）
 const IS_ADMIN = MODE === "admin";
 document.body.dataset.mode = MODE;
-const MAX_TEAMS = 20, TEAM_SIZE = 3, INITIAL_TEAMS = 5;
+const TEAM_SIZE = 3, INITIAL_TEAMS = 5;   // チーム数の上限なし
 const ATTRS = ["回折","気動","凝縮","消滅","焦熱","電導","物理"];
 
 let master = { characters: DEFAULT_DATA.characters, periods: DEFAULT_DATA.periods, updatedAt: DEFAULT_DATA.updatedAt, source: DEFAULT_DATA.source, origin: "内蔵データ" };
@@ -353,7 +353,7 @@ function renderHeader(){
   $("#hdr-ver").textContent = p ? `${p.label} ${p.ver}` : "";
   const over = master.characters.filter(isOver).length;
   $("#stat").innerHTML = over ? `<span class="warn-n">出撃回数の超過 ${over}人</span>` : "";
-  $("#team-count").textContent = `${teams().length} / ${MAX_TEAMS}`;
+  $("#team-count").textContent = `${teams().length}チーム`;
 }
 function periodByDate(){
   const today = todayStr();
@@ -386,7 +386,6 @@ function renderTeams(){
         <input type="text" class="tmemo" value="${esc(t.memo)}" placeholder="メモ（ローテ順・狙いなど）" aria-label="メモ" maxlength="120">
       </div>
     </div>`; }).join("");
-  $("#btn-addteam").disabled = ts.length >= MAX_TEAMS;
   initSortables();
 }
 function renderRoster(){
@@ -509,8 +508,7 @@ $("#roster").addEventListener("click", e => {
   if (!t) {
     const act = teamById(state.activeTeam) || teams()[0];
     if (act && !canAdd(act, id)) return;   // 理由はcanAddがトースト表示
-    if (teams().length < MAX_TEAMS) { const nt = normTeam({ members: [id] }); teams().push(nt); state.activeTeam = nt.id; commit(); toast(`新しいチーム ${teams().length} に ${c.name} を追加`); }
-    else toast("空きのあるチームがありません");
+    const nt = normTeam({ members: [id] }); teams().push(nt); state.activeTeam = nt.id; commit(); toast(`新しいチーム ${teams().length} に ${c.name} を追加`);
     return;
   }
   addToTeam(t, id); state.activeTeam = t.id; commit();
@@ -519,7 +517,7 @@ $("#roster").addEventListener("click", e => {
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList?.contains("card")) e.target.click(); });
 $("#chk-all").addEventListener("change", renderRoster);
 $("#chk-up").addEventListener("change", renderRoster);
-$("#btn-addteam").addEventListener("click", () => { if (teams().length >= MAX_TEAMS) return; const nt = normTeam({}); teams().push(nt); state.activeTeam = nt.id; commit(); });
+$("#btn-addteam").addEventListener("click", () => { const nt = normTeam({}); teams().push(nt); state.activeTeam = nt.id; commit(); });
 $("#period-sel").addEventListener("change", e => { state.period = e.target.value; state.activeTeam = null; bannerDismissed = false; commit(); });
 $("#btn-reset").addEventListener("click", () => {
   if (!confirm(`${period().label} の全チームの編成を消して、チーム数を5に戻しますか？（所持キャラ登録は残ります）`)) return;
