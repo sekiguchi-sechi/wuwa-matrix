@@ -23,6 +23,6 @@ GitHub 操作は gh CLI（`C:\Program Files\GitHub CLI\gh.exe`、sekiguchi-sechi
 6. 差分がなければコミットしない
 
 ## 補足
-- 旧・管理用 Artifact（db連携版）は 2026-09-12 に GitHub 一本化へ移行したため役目終了
+- 旧 Artifact（管理用・提供用）は 2026-09-12 に削除済み。GitHub のみで運用
 - ref-data.json と build_data.py は参考サイト由来なので公開リポジトリに含めない（gitignore 済み）
 - 編成・所持はユーザーのブラウザ localStorage にのみ保存される（サーバー側には何も持たない）
