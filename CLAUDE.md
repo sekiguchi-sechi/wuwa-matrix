@@ -1,30 +1,28 @@
 # wuwa-matrix — 鳴潮「終焉マトリクス編成板」
 
-サーバー費用なしの2本構成
-- 管理用: Claude Artifact https://claude.ai/code/artifact/8568be50-670a-4d19-bd60-6980a86bda35 （db/assets/downloads。マスタ編集・Claude連携・定期タスクの書込先）
-- 提供用: GitHub Pages https://sekiguchi-sechi.github.io/wuwa-matrix/ （リポジトリ sekiguchi-sechi/wuwa-matrix の main ブランチ `docs/` を公開。静的・マスタ埋め込み・編成はlocalStorage）
-- 旧提供用 Artifact は 2026-09-12 に削除済み
-- GitHub は gh CLI（sekiguchi-sechi でログイン済み、`C:\Program Files\GitHub CLI\gh.exe`）で操作
+公開ページ（提供用・静的・サーバー費用なし）: https://sekiguchi-sechi.github.io/wuwa-matrix/
+リポジトリ `sekiguchi-sechi/wuwa-matrix` の main ブランチ `docs/` を GitHub Pages で公開。**マスタデータの正本は `data.json`**（git履歴で変更を追う）。
+GitHub 操作は gh CLI（`C:\Program Files\GitHub CLI\gh.exe`、sekiguchi-sechi でログイン済み）。リポジトリ内の git config に user.name/email 設定済み。
 
 ## ファイル
-- `template.html` … 両アプリ共通のソース（`__DEFAULT_DATA__` / `__MODE__` / `__TITLE__` を build.py が置換）
-- `build.py [data.json]` … `web/index.html`（管理用 MODE=admin、gitignore）と `docs/index.html`（提供用 MODE=public）を生成し、`web/img` を `docs/img` へコピー
-- `build_data.py` … 初期データ生成（参考サイト ref-data.json + 手入力の期間情報 → data.json）。通常は使わない
-- `web/img/` … キャラ/ボス画像（webp）。提供用にも同じものを同梱
+- `data.json` … マスタ（正本）。`{characters:[...], periods:[...], updatedAt, source, defaultPeriod}`
+  - characters: `{id("061"等3桁), name, attr(回折/気動/凝縮/消滅/焦熱/電導), rank(4|5), ver("3.7"), icon("img/c_xxx.webp" or ""), aliases?[別表記], upcoming?(true=未実装)}`
+  - periods（先頭が最新期）: `{id("s2-3"), label("S2-3"), ver("ver3.7"), dates(表示用), start("YYYY-MM-DD"), end("YYYY-MM-DD"|""), verified(true|false), crisis[担当名], twice[2回出撃可=ヒーラー枠+担当], circuits[{name,text}], enemies[{name, attr, icon, desc}], note?}`
+  - enemies[].desc は「1ラウンド目で有効化\n<危機対応·…>\n本文\n\n2ラウンド目で有効化\n<危機進化·…>\n本文」の形式
+  - ページは start/end から「今日の開催期間」を判定して切替バナーを出す。verified:false は「要確認」表示
+- `template.html` … ページのソース（`__DEFAULT_DATA__` / `__MODE__` / `__TITLE__` を build.py が置換）
+- `build.py [data.json] [--admin]` … `docs/index.html` を生成し `web/img` → `docs/img` コピー。`--admin` で管理用Artifact向け `web/index.html` も生成（通常不要）
+- `web/img/` … キャラ/ボス画像（webp, 192px）。キャラは `c_character_NNN.webp`、新規は `c_<id>.webp`
 
-## 提供用アプリを最新マスタで更新する手順（「提供用の編成板を最新のマスタで更新して」）
-1. 管理用の db を読む: Artifact `read_db` get `master/characters` と `master/periods`（url=管理用）
-2. `data.json` を組み立てる: `{characters: chars.list, periods: periods.list, updatedAt, source, defaultPeriod: 今日が含まれる期間のid}`
-3. icon が `/_blob/<id>` のキャラは `read_asset`（url=管理用, asset_id=<id>）でローカル保存 → `web/img/c_<id>.webp` に置き、data.json の icon を `img/c_<id>.webp` に書き換える
-4. `python build.py data.json` → `docs/index.html`（+ docs/img）
-5. `git add -A && git commit -m "..." && git push` → 1〜2分で https://sekiguchi-sechi.github.io/wuwa-matrix/ に反映（`gh api repos/sekiguchi-sechi/wuwa-matrix/pages --jq .status` が built になれば完了）
-6. 管理用（テンプレを変えたとき）は `web/index.html` を url=管理用 で Artifact republish（capabilities は省略で引き継ぎ）
-注意: ref-data.json と build_data.py は参考サイト由来なので公開リポジトリに含めない（gitignore 済み）
+## マスタ更新の手順（定期タスク／「編成板を最新にして」）
+1. `git -C C:\Users\mirai\wuwa-matrix pull --ff-only`
+2. `data.json` を読み、Web（鳴潮Wiki* 共鳴者一覧・終焉マトリクス、Game8）で差分を調べる
+3. 差分があれば `data.json` を編集（id・icon・並び順は保持。新キャラは id=既存最大+1、新期は先頭に追加し verified:false）
+4. 新キャラのアイコンが取れたら Python(PIL) で 192px 正方形 webp にして `web/img/c_<id>.webp` に保存し icon に `img/c_<id>.webp`
+5. `python build.py` → `git add -A && git commit -m "data: ..." && git push` → 1〜2分で公開ページに反映（`gh api repos/sekiguchi-sechi/wuwa-matrix/pages --jq .status` が built）
+6. 差分がなければコミットしない
 
-## 管理用 db の構造
-- `master/characters` {list:[{id,name,attr,rank,ver,icon,aliases?,upcoming?}],updatedAt,source}
-- `master/periods` {list:[{id,label,ver,dates,start,end,verified,crisis[],twice[],circuits[{name,text}],enemies[{name,attr,icon,desc}],note?}],updatedAt}（先頭が最新期）
-- `app/state` {v:2,period,owned[],plans:{[periodId]:{teams:[{id,name,memo,enemy,members[]}]}}} … ユーザーの編成。触らない
-
-## 定期タスク
-`wuwa-matrix-data-update`（デスクトップアプリのルーティン、木・日 21:00）が Wiki/Game8 を調べて管理用 db を更新。提供用（GitHub Pages）は自動では更新しない（ユーザーが依頼したときに上の手順で再公開）。
+## 補足
+- 旧・管理用 Artifact（db連携版）は 2026-09-12 に GitHub 一本化へ移行したため役目終了
+- ref-data.json と build_data.py は参考サイト由来なので公開リポジトリに含めない（gitignore 済み）
+- 編成・所持はユーザーのブラウザ localStorage にのみ保存される（サーバー側には何も持たない）
