@@ -6,7 +6,7 @@
    "attr": "電導",
    "rank": 5,
    "ver": "3.7",
-   "icon": "",
+   "icon": "img/c_060.webp",
    "upcoming": true
   },
   {
@@ -15,7 +15,7 @@
    "attr": "電導",
    "rank": 5,
    "ver": "3.7",
-   "icon": "",
+   "icon": "img/c_059.webp",
    "upcoming": true
   },
   {
@@ -24,7 +24,7 @@
    "attr": "焦熱",
    "rank": 5,
    "ver": "3.6",
-   "icon": ""
+   "icon": "img/c_058.webp"
   },
   {
    "id": "057",
@@ -514,7 +514,7 @@
    "id": "s2-3",
    "label": "S2-3",
    "ver": "ver3.7",
-   "dates": "2026-09-30 〜（予定）",
+   "dates": "2026-09-30 〜（予定・要確認）",
    "start": "2026-09-30",
    "end": "",
    "verified": false,
@@ -528,7 +528,7 @@
    ],
    "circuits": [],
    "enemies": [],
-   "note": "ver3.7の敵情報は未登録です。「総キャラクター更新」から取り込むか、Claudeに更新を依頼してください。"
+   "note": "要確認: ver3.7（S2-3）の開催期間・出現敵・危機対応/危機進化・増幅回路・クライシス担当は2026-09-12時点で未発表。開始日 2026-09-30 は Ver3.6 の終了予定日（2026-09-30 04:59）からの推定。公式発表後に更新すること。"
   },
   {
    "id": "s2-2",
@@ -668,5 +668,6 @@
   }
  ],
  "updatedAt": "2026-09-12",
- "source": "参考サイト data.json + wikiwiki(鳴潮Wiki*) 共鳴者一覧/終焉マトリクス"
+ "source": "wikiwiki(鳴潮Wiki*) 共鳴者一覧 https://wikiwiki.jp/w-w/共鳴者一覧 / 終焉マトリクス https://wikiwiki.jp/w-w/終焉マトリクス / Game8 キャラ一覧 https://game8.jp/meicho/608916 / 終焉マトリクス https://game8.jp/meicho/750886",
+ "defaultPeriod": "s2-2"
 }
