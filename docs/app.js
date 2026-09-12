@@ -207,8 +207,8 @@ function renderTeams() {
           <button class="small" data-act="clear" title="このチームを空にする" ${t.members.length ? "" : "disabled"}>空にする</button>
         </div>
         <div class="slots" data-tid="${esc(t.id)}">
-          ${t.members.map(id => { const c = charById(id); return c ? cardHtml(c, { over: true }) : `<div class="slot">不明: ${esc(id)}</div>`; }).join("")}
-          ${Array.from({ length: Math.max(0, TEAM_SIZE - t.members.length) }, () => `<div class="slot">空き</div>`).join("")}
+          ${t.members.map(id => { const c = charById(id); return c ? cardHtml(c, { over: true }) : `<div class="card" data-id="${esc(id)}"><span class="nm">不明: ${esc(id)}</span></div>`; }).join("")}
+          <div class="slotbg" aria-hidden="true">${Array.from({ length: TEAM_SIZE }, () => `<i>空き</i>`).join("")}</div>
         </div>
         <input type="text" class="tmemo" value="${esc(t.memo)}" placeholder="メモ（ローテ順・狙いなど）" aria-label="メモ" maxlength="${MEMO_MAX}">
       </div>
@@ -266,13 +266,30 @@ function changePeriod(id) {
 /* ==== 50-dnd.js ==== */
 /* ---------- ドラッグ＆ドロップ（SortableJS） ----------
    #teams と #roster のコンテナは差し替わらないので起動時に1回だけ生成。
-   各チームの .slots は描画のたびに作り直されるので renderTeams から再生成する。 */
+   各チームの .slots は描画のたびに作り直されるので renderTeams から再生成する。
+   空き枠(.slotbg)は絶対配置の背景なので、ドラッグ中の並び替えに巻き込まれない。 */
 let slotSortables = [];
+
+/** 全チーム共通のドラッグ設定。forceFallback でPC/スマホとも同じ見た目・挙動にする */
+const CARD_DRAG = {
+  animation: DRAG_ANIM, ghostClass: "sortable-ghost", chosenClass: "sortable-chosen",
+  forceFallback: true, fallbackOnBody: true, fallbackTolerance: 4, fallbackClass: "drag-fb",
+  delay: DRAG_DELAY, delayOnTouchOnly: true, emptyInsertThreshold: 30,
+  onMove: ev => highlightTarget(ev.to),
+  onEnd: () => highlightTarget(null),
+};
+function highlightTarget(container) {
+  const team = container && container.closest ? container.closest(".team") : null;
+  $$(".team.drop-target").forEach(el => { if (el !== team) el.classList.remove("drop-target"); });
+  if (team) team.classList.add("drop-target");
+  $("#roster-panel").classList.toggle("drop-target", !!container && container.id === "roster");
+}
 
 function initContainerSortables() {
   // チームの並べ替え（左端の ⋮⋮ をつかむ）
   new Sortable($("#teams"), {
     handle: ".grip", draggable: ".team", animation: DRAG_ANIM, ghostClass: "sortable-ghost",
+    forceFallback: true, fallbackOnBody: true, fallbackTolerance: 4, fallbackClass: "drag-fb",
     onEnd: ev => {
       if (ev.oldIndex === ev.newIndex) return;
       const ts = teams(); const [t] = ts.splice(ev.oldIndex, 1); ts.splice(ev.newIndex, 0, t); commit();
@@ -280,8 +297,8 @@ function initContainerSortables() {
   });
   // キャラ一覧: 複製してチームへ。チームからここへ落とすと外す
   new Sortable($("#roster"), {
+    ...CARD_DRAG,
     group: { name: "cards", pull: "clone", put: true }, sort: false, draggable: ".card",
-    animation: DRAG_ANIM, ghostClass: "sortable-ghost", delay: DRAG_DELAY, delayOnTouchOnly: true,
     onAdd: ev => {
       const from = teamById(ev.from.dataset.tid);
       if (from) { const i = from.members.indexOf(ev.item.dataset.id); if (i >= 0) from.members.splice(i, 1); }
@@ -293,16 +310,16 @@ function initContainerSortables() {
 function initSlotSortables() {
   slotSortables.forEach(s => { try { s.destroy(); } catch (e) { /* 既にDOMごと消えている */ } });
   slotSortables = $$(".team .slots").map(el => new Sortable(el, {
+    ...CARD_DRAG,
     group: {
       name: "cards", pull: true,
       // ドラッグ中に受け入れ可否を判定（満員・重複・出撃上限なら落とせない）
       put: (to, from, dragEl) => canAdd(teamById(to.el.dataset.tid), dragEl.dataset.id, { quiet: true, from: teamById(from.el.dataset.tid) }),
     },
-    draggable: ".card", filter: ".slot", animation: DRAG_ANIM, ghostClass: "sortable-ghost", delay: DRAG_DELAY, delayOnTouchOnly: true,
+    draggable: ".card",
     onAdd: ev => {
       const to = teamById(ev.to.dataset.tid), from = teamById(ev.from.dataset.tid), id = ev.item.dataset.id;
       if (from) { const i = from.members.indexOf(id); if (i >= 0) from.members.splice(i, 1); }
-      // .slot(空き枠) も同じコンテナにいるため newIndex は人数を超えうる → 末尾に丸める
       addToTeam(to, id, Math.min(ev.newIndex, to.members.length));
       commit();
     },
