@@ -59,7 +59,8 @@ label.chk{font-size:12px;color:var(--muted);display:inline-flex;gap:4px;align-it
 .hdr .stat .warn-n{color:#f0a090;font-weight:700}
 
 /* ---------- レイアウト ---------- */
-.wrap{flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:12px;padding:12px}
+/* 配置エリアはコンパクトに固定し、余りをキャラ一覧に回す */
+.wrap{flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(380px,34%) minmax(0,1fr);gap:12px;padding:12px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
 .panel>.ph{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .panel>.ph h2{font-size:13px;margin:0;letter-spacing:.14em;color:var(--muted);font-weight:700}
@@ -76,11 +77,11 @@ label.chk{font-size:12px;color:var(--muted);display:inline-flex;gap:4px;align-it
   .wrap.enemy-closed #btn-enemy-open:hover{color:var(--accent)}
 }
 @media (min-width:1101px){
-  .wrap.enemy-closed{grid-template-columns:44px minmax(0,1fr) 340px}
+  .wrap.enemy-closed{grid-template-columns:44px minmax(380px,36%) minmax(0,1fr)}
 }
 /* 中間幅: 配置エリアとキャラ一覧は横並びのまま、敵情報は左の帯から引き出すドロワー */
 @media (min-width:641px) and (max-width:1100px){
-  .wrap{grid-template-columns:44px minmax(0,1fr) minmax(230px,38%);gap:8px;padding:8px}
+  .wrap{grid-template-columns:44px minmax(340px,46%) minmax(0,1fr);gap:8px;padding:8px}
   .wrap:not(.enemy-closed)::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:29}
   .wrap:not(.enemy-closed) #enemy-panel{position:fixed;left:8px;top:8px;bottom:8px;width:min(380px,calc(100vw - 60px));z-index:30;box-shadow:0 12px 40px rgba(0,0,0,.45)}
   .hdr{gap:8px 10px;padding:8px 10px}
