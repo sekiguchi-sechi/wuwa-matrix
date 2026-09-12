@@ -1,0 +1,801 @@
+<title>__TITLE__</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#efece4; --panel:#faf8f3; --panel2:#f1ede4; --line:#d8d2c4; --ink:#1f2229; --muted:#6b7080; --faint:#9aa0ad;
+  --accent:#a3781c; --accent-ink:#fff; --slot:#e6e1d5; --danger:#b3382c; --danger-bg:#f6e3df; --ok:#2f7d4f; --shadow:0 1px 2px rgba(20,18,10,.08);
+  --e-回折:#b8901a; --e-気動:#1f9e85; --e-凝縮:#2c7fc7; --e-消滅:#b04db4; --e-焦熱:#d5482a; --e-電導:#7b52d6; --e-物理:#6b7080;
+  --hdr:#1b1d23; --hdr-ink:#efe9d9;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#13151a; --panel:#1b1e25; --panel2:#22262f; --line:#2f343f; --ink:#e9e5da; --muted:#9aa1b0; --faint:#6c7382;
+  --accent:#d9b45a; --accent-ink:#1b1d23; --slot:#171a20; --danger:#e26a5c; --danger-bg:#3a2320; --ok:#5fbf85; --shadow:0 1px 3px rgba(0,0,0,.4);
+  --e-回折:#e9c650; --e-気動:#3fc9ad; --e-凝縮:#63aef0; --e-消滅:#d572d8; --e-焦熱:#f2653f; --e-電導:#a37cf5; --e-物理:#9aa1b0;
+  --hdr:#0f1114; --hdr-ink:#efe9d9;
+}}
+:root[data-theme="dark"]{
+  --bg:#13151a; --panel:#1b1e25; --panel2:#22262f; --line:#2f343f; --ink:#e9e5da; --muted:#9aa1b0; --faint:#6c7382;
+  --accent:#d9b45a; --accent-ink:#1b1d23; --slot:#171a20; --danger:#e26a5c; --danger-bg:#3a2320; --ok:#5fbf85; --shadow:0 1px 3px rgba(0,0,0,.4);
+  --e-回折:#e9c650; --e-気動:#3fc9ad; --e-凝縮:#63aef0; --e-消滅:#d572d8; --e-焦熱:#f2653f; --e-電導:#a37cf5; --e-物理:#9aa1b0;
+  --hdr:#0f1114; --hdr-ink:#efe9d9;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;font-size:14px;line-height:1.5;display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:6px 10px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
+button.ghost{background:transparent}
+button.danger{color:var(--danger)}
+button.small{padding:3px 8px;font-size:12px;border-radius:5px}
+button:disabled{opacity:.45;cursor:not-allowed}
+select,input[type=text]{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+textarea{font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:8px;width:100%}
+label.chk{font-size:12px;color:var(--muted);display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+
+/* header */
+.hdr{flex:none;background:var(--hdr);color:var(--hdr-ink);display:flex;align-items:center;gap:10px 14px;padding:8px 16px;flex-wrap:wrap;z-index:20}
+.hdr h1{font-family:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;font-weight:800;font-size:19px;margin:0;letter-spacing:.06em;white-space:nowrap}
+.hdr h1 small{font-family:inherit;font-weight:600;font-size:12px;color:#b9b19a;margin-left:8px;letter-spacing:.12em}
+.hdr .sp{flex:1}
+.hdr button{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:var(--hdr-ink)}
+.hdr .stat{font-size:12px;color:#b9b19a;white-space:nowrap}
+.hdr .stat .warn-n{color:#f0a090;font-weight:700}
+
+/* layout */
+.wrap{flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:12px;padding:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0;box-shadow:var(--shadow)}
+.panel>.ph{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel>.ph h2{font-size:13px;margin:0;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.panel>.ph .sp{flex:1}
+.panel>.ph .cnt{font-size:12px;color:var(--muted)}
+.panel>.pb{overflow:auto;padding:10px 12px;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.tabbar{display:none}
+#btn-enemy-open{display:none}
+@media (min-width:641px){
+  .wrap.enemy-closed #enemy-panel>.ph,.wrap.enemy-closed #enemy-panel>.pb{display:none}
+  .wrap.enemy-closed #btn-enemy-open{display:block;writing-mode:vertical-rl;margin:10px auto;padding:10px 6px;letter-spacing:.2em;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:0}
+  .wrap.enemy-closed #btn-enemy-open:hover{color:var(--accent)}
+}
+@media (min-width:1101px){
+  .wrap.enemy-closed{grid-template-columns:44px minmax(0,1fr) 340px}
+}
+/* 中間幅: 配置エリアとキャラ一覧は横並びのまま、敵情報は左の帯から引き出すドロワー */
+@media (min-width:641px) and (max-width:1100px){
+  .wrap{grid-template-columns:44px minmax(0,1fr) minmax(230px,38%);gap:8px;padding:8px}
+  .wrap:not(.enemy-closed)::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:29}
+  .wrap:not(.enemy-closed) #enemy-panel{position:fixed;left:8px;top:8px;bottom:8px;width:min(380px,calc(100vw - 60px));z-index:30;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+  .hdr{gap:8px 10px;padding:8px 10px}
+  .hdr button{padding:5px 8px;font-size:13px}
+}
+@media (max-width:640px){
+  .wrap{display:block;padding:8px}
+  .wrap>.panel{display:none;height:100%}
+  .wrap[data-tab="teams"] #teams-panel,.wrap[data-tab="roster"] #roster-panel,.wrap[data-tab="enemy"] #enemy-panel{display:flex}
+  .tabbar{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--hdr);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .tabbar button{background:transparent;border:0;color:#b9b19a;font-weight:700;letter-spacing:.1em;padding:8px 0;border-radius:8px}
+  .tabbar button.on{color:var(--hdr-ink);background:rgba(255,255,255,.1)}
+  .hdr h1 small{display:block;margin:0}
+  .hdr .stat{white-space:normal}
+}
+
+/* teams */
+.banner{display:flex;align-items:center;gap:8px;font-size:12px;background:var(--panel2);border:1px solid var(--accent);border-radius:8px;padding:6px 10px;margin-bottom:10px;flex-wrap:wrap}
+.banner b{color:var(--accent)}
+.team{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:stretch;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);margin-bottom:10px;position:relative}
+.team.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.team .grip{cursor:grab;color:var(--faint);padding:0 4px;font-size:18px;line-height:1;user-select:none;touch-action:none;display:flex;align-items:center}
+.team .grip:active{cursor:grabbing}
+.team .tbody{display:flex;flex-direction:column;gap:6px;min-width:0}
+.team .trow{display:flex;align-items:center;gap:6px;min-width:0}
+.team .tno{font-family:"Shippori Mincho B1",serif;font-weight:800;font-size:15px;color:var(--accent);min-width:1.4em;text-align:center}
+.team.active .tno{text-decoration:underline;text-underline-offset:3px}
+.team input.tname{flex:1;min-width:60px;background:transparent;border:1px solid transparent;padding:3px 6px;font-weight:700;font-size:13px}
+.team input.tname:hover,.team input.tname:focus{border-color:var(--line);background:var(--panel)}
+.team .trow button{padding:2px 8px;font-size:11px}
+.team .slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-height:86px}
+.team .slot{border:1px dashed var(--line);border-radius:8px;background:var(--slot);min-height:86px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:11px;letter-spacing:.1em}
+.team input.tmemo{background:transparent;border:1px solid transparent;padding:2px 6px;font-size:12px;color:var(--muted);width:100%}
+.team input.tmemo:hover,.team input.tmemo:focus{border-color:var(--line);background:var(--panel);color:var(--ink)}
+.sortable-ghost{opacity:.35}
+.addteam{width:100%;border-style:dashed;padding:10px;color:var(--muted);background:transparent}
+
+/* cards */
+.card{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 5px;border-radius:8px;background:var(--panel);border:1px solid var(--line);cursor:pointer;user-select:none;position:relative;touch-action:manipulation}
+.card:hover{border-color:var(--accent)}
+.card .ic{width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--panel2);border:2px solid var(--ecol,var(--line));display:block}
+.card .ic.txt{display:flex;align-items:center;justify-content:center;font-family:"Shippori Mincho B1",serif;font-weight:800;font-size:20px;color:var(--ecol)}
+.card .nm{font-size:11px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .rk{position:absolute;top:3px;left:5px;font-size:9px;color:var(--accent);font-weight:700}
+.card .dep{position:absolute;top:5px;right:5px;display:flex;gap:2px}
+.card .dep i{width:6px;height:6px;border-radius:50%;background:var(--faint);display:block}
+.card .dep i.on{background:var(--accent)}
+.card .badge{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:9px;padding:0 4px;border-radius:3px;background:var(--danger);color:#fff;white-space:nowrap}
+.card.used{opacity:.42}
+.card.notown{opacity:.3}
+.card.over{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.empty{color:var(--muted);font-size:13px;padding:16px 8px;text-align:center;line-height:1.7}
+
+/* enemies */
+.meta{font-size:12px;color:var(--muted);display:grid;grid-template-columns:auto 1fr;gap:4px 8px;margin:4px 0 10px;align-items:start}
+.meta b{color:var(--ink);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{display:inline-block;font-size:11px;padding:0 7px;border-radius:99px;border:1px solid var(--line);background:var(--panel2);line-height:1.6}
+.ech{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:99px;color:#fff;background:var(--ecol,var(--faint));line-height:1.6;white-space:nowrap}
+.warn{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:6px;padding:6px 10px;margin-bottom:8px}
+.warn b{color:var(--danger)}
+.enemy{border-top:1px solid var(--line);padding:10px 0}
+.enemy img{width:100%;height:auto;border-radius:6px;display:block;margin-bottom:6px}
+.enemy .en{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:4px}
+.enemy .en .who{margin-left:auto;font-size:11px;font-weight:500;color:var(--muted)}
+.enemy .ed{font-size:12px;color:var(--ink);white-space:pre-wrap;line-height:1.55}
+.enemy .ed .rd{display:inline-block;margin-top:4px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+.enemy .ed .tg{color:var(--muted);font-weight:700}
+details.circ{margin:6px 0 8px}
+details.circ summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+details.circ .ci{font-size:12px;padding:4px 0}
+details.circ .ci b{display:block;color:var(--ink)}
+.note{font-size:12px;color:var(--muted);background:var(--panel2);border:1px dashed var(--line);border-radius:6px;padding:8px;margin-top:8px;line-height:1.6}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .box{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.modal .mh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.modal .mh h3{margin:0;font-size:15px;font-weight:700}
+.modal .mh .sp{flex:1}
+.modal .mb{padding:12px 16px;overflow:auto}
+.modal .mf{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ownergrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.ownergrid .card{opacity:.4}
+.ownergrid .card.own{opacity:1;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ownergrid .card.own::before{content:"✓";position:absolute;top:2px;right:5px;font-size:11px;color:var(--accent);font-weight:700}
+.sec{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.12em;margin:14px 0 6px}
+.sec:first-child{margin-top:0}
+.kv{font-size:13px;line-height:1.7}
+.kv code{font-size:12px;background:var(--panel2);padding:1px 5px;border-radius:4px}
+.row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.row .sp{flex:1}
+.shot{max-width:100%;max-height:60vh;border:1px solid var(--line);border-radius:6px;display:block;margin:0 auto}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--hdr);color:var(--hdr-ink);padding:8px 14px;border-radius:8px;font-size:13px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.35);opacity:0;transition:opacity .2s;pointer-events:none;display:flex;gap:10px;align-items:center;max-width:92vw}
+.toast.show{opacity:1;pointer-events:auto}
+body[data-mode="public"] [data-admin]{display:none !important}
+.hdr .mode{font-size:11px;letter-spacing:.2em;color:#1b1d23;background:var(--accent);border-radius:4px;padding:0 6px;font-weight:700}
+.fr{display:grid;grid-template-columns:120px minmax(0,1fr);gap:6px;align-items:center;margin:4px 0;font-size:13px}
+.fr>span{color:var(--muted);font-size:12px}
+.fr input[type=text],.fr select,.fr textarea{width:100%}
+.fr textarea{font-family:inherit;font-size:13px}
+.eblock{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:8px 0;background:var(--panel2)}
+.eblock .fr{grid-template-columns:70px minmax(0,1fr)}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
+.icprev{width:40px;height:40px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;background:var(--panel2)}
+.toast button{background:var(--accent);color:var(--accent-ink);border:0;padding:3px 10px;font-weight:700;font-size:12px}
+@media (max-width:640px){ .toast{bottom:64px} }
+@media (prefers-reduced-motion:reduce){ .toast{transition:none} }
+</style>
+
+<header class="hdr">
+  <h1>終焉マトリクス編成板<small id="hdr-ver"></small></h1>
+  <span class="mode" data-admin>管理用</span>
+  <span class="stat" id="stat"></span>
+  <span class="sp"></span>
+  <button id="btn-owned">所持キャラ登録</button>
+  <button id="btn-master" data-admin>マスタ編集</button>
+  <button id="btn-update" data-admin>総キャラクター更新</button>
+  <button id="btn-public" data-admin>提供用データ</button>
+  <button id="btn-shot">画像で保存</button>
+  <button id="btn-copy">編成をコピー</button>
+  <button id="btn-reset">全リセット</button>
+</header>
+
+<div class="wrap" id="wrap" data-tab="teams">
+  <section class="panel" id="enemy-panel">
+    <div class="ph"><h2>敵情報</h2><span class="sp"></span>
+      <select id="period-sel" aria-label="開催期間"></select>
+      <button class="small ghost" id="btn-enemy-close" title="パネルを閉じる">◂ 閉じる</button>
+    </div>
+    <button id="btn-enemy-open" title="敵情報を開く">敵情報 ▸</button>
+    <div class="pb" id="enemy-body"></div>
+  </section>
+
+  <section class="panel" id="teams-panel">
+    <div class="ph"><h2>配置エリア</h2><span class="cnt" id="team-count"></span><span class="sp"></span>
+      <button class="small" id="btn-prev">前期からコピー</button>
+    </div>
+    <div class="pb">
+      <div id="banner"></div>
+      <div id="teams"></div>
+      <button class="addteam" id="btn-addteam">＋ チームを追加</button>
+    </div>
+  </section>
+
+  <section class="panel" id="roster-panel">
+    <div class="ph"><h2>所持キャラクター</h2><span class="sp"></span>
+      <label class="chk"><input type="checkbox" id="chk-all"> 未所持も表示</label>
+      <label class="chk"><input type="checkbox" id="chk-up"> 未実装も表示</label>
+    </div>
+    <div class="pb"><div class="roster" id="roster"></div></div>
+  </section>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="teams" class="on">編成</button>
+  <button data-tab="roster">キャラ</button>
+  <button data-tab="enemy">敵情報</button>
+</nav>
+
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status"><span id="toast-msg"></span><button id="toast-act" hidden></button></div>
+
+<script>
+const DEFAULT_DATA = __DEFAULT_DATA__;
+const MODE = "__MODE__";   // "admin" = 管理用（db/assets連携・マスタ編集） / "public" = 提供用（内蔵データのみ）
+const IS_ADMIN = MODE === "admin";
+document.body.dataset.mode = MODE;
+const MAX_TEAMS = 20, TEAM_SIZE = 3, INITIAL_TEAMS = 5;
+const ATTRS = ["回折","気動","凝縮","消滅","焦熱","電導","物理"];
+
+let master = { characters: DEFAULT_DATA.characters, periods: DEFAULT_DATA.periods, updatedAt: DEFAULT_DATA.updatedAt, source: DEFAULT_DATA.source, origin: "内蔵データ" };
+let state = { period: DEFAULT_DATA.defaultPeriod || DEFAULT_DATA.periods[0].id, owned: [], plans: {}, activeTeam: null };
+let db = null, downloads = null, assets = null, saveTimer = null, renderTimer = null, lastSavedAt = null, sortables = [], undoSnap = null, bannerDismissed = false;
+
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => "t" + Math.random().toString(36).slice(2, 8);
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = n => String(n).padStart(2, "0");
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const norm = s => String(s || "").replace(/[・()（）\s]/g, "");
+const charById = id => master.characters.find(c => c.id === id);
+const nameMatch = (c, n) => c.id === n || c.name === n || norm(c.name) === norm(n) || (c.aliases || []).some(a => norm(a) === norm(n));
+const inList = (c, arr) => (arr || []).some(n => nameMatch(c, n));
+const period = () => master.periods.find(p => p.id === state.period) || master.periods[0];
+const maxDeploy = c => inList(c, period()?.twice) ? 2 : 1;
+const isOwned = id => !state.owned.length || state.owned.includes(id);
+const showUpcoming = () => $("#chk-up").checked;
+function normTeam(t){ return { id: t.id || uid(), name: t.name || "", memo: t.memo || "", enemy: t.enemy || "", members: Array.isArray(t.members) ? t.members.slice() : [] }; }
+function newTeams(n){ return Array.from({length:n}, () => normTeam({})); }
+function plan(){ let p = state.plans[state.period]; if (!p || !Array.isArray(p.teams)) { p = state.plans[state.period] = { teams: newTeams(INITIAL_TEAMS) }; } return p; }
+const teams = () => plan().teams;
+const teamById = id => teams().find(t => t.id === id);
+const teamLabel = (t, i) => t.name || `チーム ${i+1}`;
+const usedCount = id => teams().reduce((n, t) => n + (t.members.includes(id) ? 1 : 0), 0);
+const isOver = c => usedCount(c.id) > maxDeploy(c);
+
+function toast(msg, action){
+  const t = $("#toast"), b = $("#toast-act");
+  $("#toast-msg").textContent = msg;
+  b.hidden = !action; b.onclick = null;
+  if (action) { b.textContent = action.label; b.onclick = () => { t.classList.remove("show"); action.fn(); }; }
+  t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), action ? 7000 : 1800);
+}
+function pushUndo(label){ undoSnap = { label, plans: clone(state.plans), period: state.period }; }
+function undoAction(){ return { label: "元に戻す", fn: () => { if (!undoSnap) return; state.plans = undoSnap.plans; state.period = undoSnap.period; undoSnap = null; commit(); toast("元に戻しました"); } }; }
+
+/* ---------- persistence ---------- */
+function stateDoc(){ return { v: 2, period: state.period, owned: state.owned, plans: state.plans }; }
+function loadLocal(){
+  try { const s = JSON.parse(localStorage.getItem("dm_state") || "null"); if (s) applyRemoteState(s); } catch(e){}
+  if (!IS_ADMIN) return;   // 提供用は内蔵データ固定
+  try { const m = JSON.parse(localStorage.getItem("dm_master") || "null"); if (m && m.characters) { master = {...master, ...m, origin: "ローカル保存"}; } } catch(e){}
+}
+function saveState(){
+  try { localStorage.setItem("dm_state", JSON.stringify(stateDoc())); } catch(e){}
+  if (!db) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    lastSavedAt = new Date().toISOString();
+    db.doc("app/state").set({ ...stateDoc(), savedAt: lastSavedAt }).catch(e => console.warn("save failed", e));
+  }, 350);
+}
+async function saveMaster(m, originLabel){
+  master = { ...master, ...m, origin: originLabel || master.origin };
+  try { localStorage.setItem("dm_master", JSON.stringify({characters: master.characters, periods: master.periods, updatedAt: master.updatedAt, source: master.source})); } catch(e){}
+  if (db) {
+    await db.doc("master/characters").set({ list: master.characters, updatedAt: master.updatedAt || "", source: master.source || "" });
+    await db.doc("master/periods").set({ list: master.periods, updatedAt: master.updatedAt || "" });
+  }
+}
+function applyMasterDocs(c, p){
+  let n = 0;
+  if (c.exists && Array.isArray(c.data().list) && c.data().list.length) { master.characters = c.data().list; master.updatedAt = c.data().updatedAt || master.updatedAt; master.source = c.data().source || master.source; n++; }
+  if (p.exists && Array.isArray(p.data().list) && p.data().list.length) { master.periods = p.data().list; n++; }
+  if (n) master.origin = "共有データ(db)";
+  if (!master.periods.find(x => x.id === state.period)) state.period = master.periods[0].id;
+  return n;
+}
+function applyRemoteState(d){
+  if (!d) return;
+  if (d.period) state.period = d.period;
+  if (Array.isArray(d.owned)) state.owned = d.owned;
+  if (d.plans && typeof d.plans === "object") { state.plans = {}; for (const k in d.plans) state.plans[k] = { teams: (d.plans[k].teams || []).map(normTeam) }; }
+  else if (Array.isArray(d.teams)) { state.plans = { [state.period]: { teams: d.teams.map(normTeam) } }; }
+}
+async function connectDb(){
+  if (!IS_ADMIN) { scheduleRender(); return; }
+  try { db = await window.claude?.use?.("db"); } catch(e){ db = null; }
+  try { downloads = await window.claude?.use?.("downloads"); } catch(e){ downloads = null; }
+  try { assets = await window.claude?.use?.("assets"); } catch(e){ assets = null; }
+  if (!db) { scheduleRender(); return; }
+  try {
+    const [c, p] = await Promise.all([db.doc("master/characters").get(), db.doc("master/periods").get()]);
+    applyMasterDocs(c, p);
+  } catch(e){ console.warn("master read failed", e); }
+  let first = true;
+  db.doc("app/state").onSnapshot(snap => {
+    if (snap.metadata.hasPendingWrites) return;
+    const d = snap.exists ? snap.data() : null;
+    if (d && d.savedAt && d.savedAt === lastSavedAt) return;   // 自分の書き込みの反映は無視
+    if (d) applyRemoteState(d); else if (first) saveState();
+    first = false;
+    scheduleRender();
+  }, e => { console.warn("state subscription ended", e); });
+}
+
+/* ---------- rendering ---------- */
+function scheduleRender(){ clearTimeout(renderTimer); renderTimer = setTimeout(renderAll, 0); }
+function cardHtml(c, opts={}){
+  const col = `--ecol:var(--e-${c.attr})`;
+  const icon = c.icon ? `<img class="ic" src="${esc(c.icon)}" alt="" loading="lazy" draggable="false">` : `<div class="ic txt">${esc(c.name.slice(0,1))}</div>`;
+  let dep = "", badge = "";
+  if (opts.dep) { const mx = maxDeploy(c), u = usedCount(c.id); dep = `<span class="dep" title="出撃可能回数 ${Math.max(0,mx-u)}/${mx}">${Array.from({length:mx},(_,i)=>`<i class="${i < mx-u ? "on":""}"></i>`).join("")}</span>`; }
+  if (opts.over && isOver(c)) badge = `<span class="badge">超過</span>`; else if (c.upcoming) badge = `<span class="badge">未実装</span>`;
+  const cls = ["card", opts.cls || "", (opts.over && isOver(c)) ? "over" : ""].join(" ").trim();
+  return `<div class="${cls}" data-id="${esc(c.id)}" style="${col}" title="${esc(c.name)} / ${esc(c.attr)} / ★${c.rank}${c.ver?" / ver"+esc(c.ver):""}" tabindex="0">
+    <span class="rk">★${c.rank}</span>${dep}${icon}${badge}<span class="nm">${esc(c.name)}</span></div>`;
+}
+function renderHeader(){
+  const p = period();
+  $("#hdr-ver").textContent = p ? `${p.label} ${p.ver}` : "";
+  const over = master.characters.filter(isOver).length;
+  $("#stat").innerHTML = over ? `<span class="warn-n">出撃回数の超過 ${over}人</span>` : "";
+  $("#team-count").textContent = `${teams().length} / ${MAX_TEAMS}`;
+}
+function periodByDate(){
+  const today = todayStr();
+  const cands = master.periods.filter(p => p.start && p.start <= today && (!p.end || today <= p.end));
+  cands.sort((a, b) => (b.start || "").localeCompare(a.start || ""));
+  return cands[0] || null;
+}
+function renderBanner(){
+  const b = $("#banner"); const cur = periodByDate();
+  if (!cur || cur.id === state.period || bannerDismissed) { b.innerHTML = ""; return; }
+  b.innerHTML = `<div class="banner">本日は <b>${esc(cur.label)} ${esc(cur.ver)}</b> の開催期間です。<button class="small primary" data-switch="${esc(cur.id)}">切り替える</button><button class="small ghost" data-dismiss>今はしない</button></div>`;
+}
+function renderTeams(){
+  const wrap = $("#teams"); const p = period(); const ts = teams();
+  if (state.activeTeam && !ts.find(t => t.id === state.activeTeam)) state.activeTeam = null;
+  wrap.innerHTML = ts.map((t, i) => {
+    return `
+    <div class="team${t.id===state.activeTeam?" active":""}" data-tid="${esc(t.id)}">
+      <span class="grip" title="ドラッグで並べ替え" aria-label="並べ替え">⋮⋮</span>
+      <div class="tbody">
+        <div class="trow">
+          <span class="tno">${i+1}</span>
+          <input type="text" class="tname" value="${esc(t.name)}" placeholder="チーム ${i+1}" aria-label="チーム名" maxlength="20">
+          <button class="small" data-act="clear" title="このチームを空にする" ${t.members.length ? "" : "disabled"}>空にする</button>
+        </div>
+        <div class="slots" data-tid="${esc(t.id)}">
+          ${t.members.map(id => { const c = charById(id); return c ? cardHtml(c, { over: true }) : `<div class="slot">不明: ${esc(id)}</div>`; }).join("")}
+          ${Array.from({length: Math.max(0, TEAM_SIZE - t.members.length)}, () => `<div class="slot">空き</div>`).join("")}
+        </div>
+        <input type="text" class="tmemo" value="${esc(t.memo)}" placeholder="メモ（ローテ順・狙いなど）" aria-label="メモ" maxlength="120">
+      </div>
+    </div>`; }).join("");
+  $("#btn-addteam").disabled = ts.length >= MAX_TEAMS;
+  initSortables();
+}
+function renderRoster(){
+  const showAll = $("#chk-all").checked || !state.owned.length;
+  const list = master.characters.filter(c => (showAll || state.owned.includes(c.id)) && (showUpcoming() || !c.upcoming));
+  const el = $("#roster");
+  const hint = state.owned.length ? "" : `<div class="empty" style="grid-column:1/-1;padding:6px 8px">所持キャラが未登録のため全キャラを表示中。「所持キャラ登録」で絞り込めます。</div>`;
+  el.innerHTML = hint + list.map(c => cardHtml(c, { dep: true, over: true, cls: (usedCount(c.id) >= maxDeploy(c) ? "used" : "") + (isOwned(c.id) ? "" : " notown") })).join("");
+}
+function fmtDesc(d){
+  return esc(d).replace(/^(\d+ラウンド目で有効化)$/gm, '<span class="rd">$1</span>').replace(/(&lt;[^&]*?&gt;)/g, '<span class="tg">$1</span>');
+}
+function renderEnemies(){
+  const sel = $("#period-sel");
+  sel.innerHTML = master.periods.map(p => `<option value="${esc(p.id)}"${p.id===state.period?" selected":""}>${esc(p.label)} ${esc(p.ver)}${p.verified===false?" (要確認)":""}</option>`).join("");
+  const p = period(); const b = $("#enemy-body");
+  if (!p) { b.innerHTML = `<div class="empty">開催期間データがありません</div>`; return; }
+  const chips = arr => arr && arr.length ? arr.map(n => `<span class="chip">${esc(n)}</span>`).join("") : `<span class="chip">—</span>`;
+  b.innerHTML = `
+    ${p.verified === false ? `<div class="warn"><b>要確認</b>${IS_ADMIN ? "自動更新で取り込んだ未確認の情報です。ゲーム内表示と照合してください。<button class=\"small\" data-verify>確認済みにする</button>" : "未確認の情報を含みます。ゲーム内表示を優先してください。"}</div>` : ""}
+    <div class="meta">
+      <span>期間</span><b>${esc(p.dates || "—")}</b>
+      <span>クライシス担当</span><b class="chips">${chips(p.crisis)}</b>
+      <span>2回出撃可</span><b class="chips">${chips(p.twice)}</b>
+    </div>
+    ${p.circuits && p.circuits.length ? `<details class="circ"><summary>増幅回路（${p.circuits.length}）</summary>${p.circuits.map(c => `<div class="ci"><b>${esc(c.name)}</b>${esc(c.text)}</div>`).join("")}</details>` : ""}
+    ${(p.enemies||[]).map(e => `<div class="enemy" style="--ecol:var(--e-${esc(e.attr)})">
+        ${e.icon ? `<img src="${esc(e.icon)}" alt="">` : ""}
+        <div class="en"><span class="ech">${esc(e.attr)}</span>${esc(e.name)}</div>
+        <div class="ed">${fmtDesc(e.desc || "")}</div>
+      </div>`).join("")}
+    ${!(p.enemies||[]).length ? `<div class="empty">この期間の敵情報は未登録です</div>` : ""}
+    ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}`;
+}
+function renderAll(){ renderHeader(); renderBanner(); renderTeams(); renderRoster(); renderEnemies(); }
+
+/* ---------- team ops ---------- */
+function canAdd(team, id, opts={}){
+  const c = charById(id); if (!c || !team) return false;
+  const say = m => { if (!opts.quiet) toast(m); return false; };
+  if (c.upcoming && !showUpcoming()) return say(`${c.name} は未実装です（「未実装も表示」をオンにすると編成できます）`);
+  if (!isOwned(id)) return say(`${c.name} は未所持です（所持キャラ登録で追加）`);
+  if (team.members.includes(id)) return say(`${c.name} はこのチームに既にいます`);
+  if (team.members.length >= TEAM_SIZE) return say("このチームは満員です（最大3人）");
+  let used = usedCount(id); if (opts.from && opts.from.members.includes(id)) used--;
+  if (used >= maxDeploy(c)) return say(`${c.name} は出撃回数の上限（${maxDeploy(c)}回）です`);
+  return true;
+}
+function addToTeam(team, id, index, opts){
+  if (!canAdd(team, id, opts)) return false;
+  if (index == null || index > team.members.length) team.members.push(id); else team.members.splice(index, 0, id);
+  return true;
+}
+function pickTeamFor(id){
+  const act = teamById(state.activeTeam);
+  if (act && canAdd(act, id, { quiet: true })) return act;
+  return teams().find(t => canAdd(t, id, { quiet: true })) || null;
+}
+function commit(){ saveState(); scheduleRender(); }
+
+function initSortables(){
+  sortables.forEach(s => { try { s.destroy(); } catch(e){} }); sortables = [];
+  sortables.push(new Sortable($("#teams"), { handle: ".grip", animation: 150, draggable: ".team", ghostClass: "sortable-ghost",
+    onEnd: ev => { if (ev.oldIndex === ev.newIndex) return; const ts = teams(); const [t] = ts.splice(ev.oldIndex, 1); ts.splice(ev.newIndex, 0, t); commit(); } }));
+  document.querySelectorAll(".team .slots").forEach(el => {
+    sortables.push(new Sortable(el, {
+      group: { name: "cards", pull: true, put: (to, from, dragEl) => canAdd(teamById(to.el.dataset.tid), dragEl.dataset.id, { quiet: true, from: teamById(from.el.dataset.tid) }) },
+      draggable: ".card", filter: ".slot", animation: 150, ghostClass: "sortable-ghost", delay: 120, delayOnTouchOnly: true,
+      onAdd: ev => {
+        const to = teamById(ev.to.dataset.tid); const id = ev.item.dataset.id; const fromTeam = teamById(ev.from.dataset.tid);
+        if (fromTeam) { const i = fromTeam.members.indexOf(id); if (i >= 0) fromTeam.members.splice(i, 1); }
+        if (!addToTeam(to, id, Math.min(ev.newIndex, TEAM_SIZE-1)) && fromTeam) fromTeam.members.splice(ev.oldIndex, 0, id);
+        commit();
+      },
+      onUpdate: ev => { const t = teamById(ev.to.dataset.tid); const [m] = t.members.splice(ev.oldIndex, 1); t.members.splice(Math.min(ev.newIndex, t.members.length), 0, m); commit(); },
+      onRemove: ev => { if (ev.to.id === "roster") { const t = teamById(ev.from.dataset.tid); const i = t.members.indexOf(ev.item.dataset.id); if (i >= 0) t.members.splice(i, 1); commit(); } }
+    }));
+  });
+  sortables.push(new Sortable($("#roster"), { group: { name: "cards", pull: "clone", put: true }, sort: false, draggable: ".card", animation: 150, ghostClass: "sortable-ghost", delay: 120, delayOnTouchOnly: true,
+    onAdd: ev => { ev.item.remove(); } }));
+}
+
+/* ---------- events ---------- */
+$("#teams").addEventListener("click", e => {
+  if (e.target.closest("input,select")) return;
+  const teamEl = e.target.closest(".team"); if (!teamEl) return;
+  const team = teamById(teamEl.dataset.tid); if (!team) return;
+  const btn = e.target.closest("button[data-act]");
+  if (btn) {
+    const i = teams().indexOf(team);
+    if (btn.dataset.act === "clear") { if (!team.members.length) return; pushUndo("空"); team.members = []; toast(`${teamLabel(team, i)} を空にしました`, undoAction()); commit(); }
+    return;
+  }
+  const card = e.target.closest(".card");
+  if (card) { const i = team.members.indexOf(card.dataset.id); if (i >= 0) team.members.splice(i,1); state.activeTeam = team.id; commit(); return; }
+  state.activeTeam = (state.activeTeam === team.id) ? null : team.id; scheduleRender();
+});
+$("#teams").addEventListener("change", e => {
+  const teamEl = e.target.closest(".team"); if (!teamEl) return;
+  const team = teamById(teamEl.dataset.tid); if (!team) return;
+  if (e.target.classList.contains("tname")) { team.name = e.target.value.trim(); saveState(); }
+  else if (e.target.classList.contains("tmemo")) { team.memo = e.target.value.trim(); saveState(); }
+});
+const midMQ = window.matchMedia("(min-width:641px) and (max-width:1100px)");
+function setEnemyClosed(closed, persist=true){ $("#wrap").classList.toggle("enemy-closed", closed); if (persist && !midMQ.matches) { try { localStorage.setItem("dm_enemy_closed", closed ? "1" : "0"); } catch(e){} } }
+function applyEnemyPref(){ if (midMQ.matches) { setEnemyClosed(true, false); return; } let c = false; try { c = localStorage.getItem("dm_enemy_closed") === "1"; } catch(e){} setEnemyClosed(c, false); }
+$("#btn-enemy-close").addEventListener("click", () => setEnemyClosed(true));
+$("#btn-enemy-open").addEventListener("click", () => setEnemyClosed(false));
+$("#wrap").addEventListener("click", e => { if (e.target === e.currentTarget && midMQ.matches && !$("#wrap").classList.contains("enemy-closed")) setEnemyClosed(true); });
+midMQ.addEventListener("change", applyEnemyPref);
+$("#banner").addEventListener("click", e => {
+  const sw = e.target.closest("[data-switch]");
+  if (sw) { state.period = sw.dataset.switch; state.activeTeam = null; commit(); toast(`${period().label} に切り替えました`); return; }
+  if (e.target.closest("[data-dismiss]")) { bannerDismissed = true; renderBanner(); }
+});
+$("#roster").addEventListener("click", e => {
+  const card = e.target.closest(".card"); if (!card) return;
+  const id = card.dataset.id, c = charById(id);
+  const t = pickTeamFor(id);
+  if (!t) {
+    const act = teamById(state.activeTeam) || teams()[0];
+    if (act && !canAdd(act, id)) return;   // 理由はcanAddがトースト表示
+    if (teams().length < MAX_TEAMS) { const nt = normTeam({ members: [id] }); teams().push(nt); state.activeTeam = nt.id; commit(); toast(`新しいチーム ${teams().length} に ${c.name} を追加`); }
+    else toast("空きのあるチームがありません");
+    return;
+  }
+  addToTeam(t, id); state.activeTeam = t.id; commit();
+  toast(`${teamLabel(t, teams().indexOf(t))} に ${c.name} を追加`);
+});
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList?.contains("card")) e.target.click(); });
+$("#chk-all").addEventListener("change", renderRoster);
+$("#chk-up").addEventListener("change", renderRoster);
+$("#btn-addteam").addEventListener("click", () => { if (teams().length >= MAX_TEAMS) return; const nt = normTeam({}); teams().push(nt); state.activeTeam = nt.id; commit(); });
+$("#period-sel").addEventListener("change", e => { state.period = e.target.value; state.activeTeam = null; bannerDismissed = false; commit(); });
+$("#btn-reset").addEventListener("click", () => {
+  if (!confirm(`${period().label} の全チームの編成を消して、チーム数を5に戻しますか？（所持キャラ登録は残ります）`)) return;
+  pushUndo("全リセット"); plan().teams = newTeams(INITIAL_TEAMS); state.activeTeam = null; commit(); toast("リセットしました", undoAction());
+});
+$("#btn-prev").addEventListener("click", () => {
+  const i = master.periods.findIndex(p => p.id === state.period);
+  const prev = master.periods[i + 1];
+  const src = prev && state.plans[prev.id];
+  if (!prev || !src || !src.teams.some(t => t.members.length)) { toast(prev ? `${prev.label} の編成がありません` : "前の期間がありません"); return; }
+  if (teams().some(t => t.members.length) && !confirm(`${period().label} の現在の編成を ${prev.label} の編成で置き換えますか？`)) return;
+  pushUndo("前期コピー"); plan().teams = src.teams.map(t => normTeam({ ...t, id: uid(), enemy: "" })); state.activeTeam = null; commit();
+  toast(`${prev.label} の編成をコピーしました`, undoAction());
+});
+$("#tabbar").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (!b) return; setTab(b.dataset.tab); });
+function setTab(tab){ $("#wrap").dataset.tab = tab; document.querySelectorAll("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab)); try { sessionStorage.setItem("dm_tab", tab); } catch(e){} }
+$("#btn-copy").addEventListener("click", async () => {
+  const p = period();
+  const lines = [`【終焉マトリクス ${p?p.label+" "+p.ver:""}】`].concat(teams().map((t,i) => `${teamLabel(t,i)}: ${t.members.map(id => charById(id)?.name || id).join(" / ") || "（空）"}${t.memo ? `　※${t.memo}` : ""}`));
+  try { await navigator.clipboard.writeText(lines.join("\n")); toast("編成をコピーしました"); }
+  catch(e) { openModal("編成テキスト", `<textarea rows="12" readonly>${esc(lines.join("\n"))}</textarea>`, ``); }
+});
+$("#btn-shot").addEventListener("click", async () => {
+  const el = $("#teams"); if (!el.children.length) { toast("チームがありません"); return; }
+  toast("画像を生成中…");
+  try {
+    const canvas = await html2canvas(el, { backgroundColor: getComputedStyle(document.body).backgroundColor, scale: 2, useCORS: true, logging: false });
+    const url = canvas.toDataURL("image/png");
+    const fname = `終焉マトリクス_${period()?.label || ""}_${todayStr()}.png`;
+    const m = openModal("編成画像", `<img class="shot" src="${url}" alt="編成画像"><div class="kv" style="text-align:center;margin-top:8px;color:var(--muted)">${downloads ? "「ファイルに保存」か、" : ""}画像を右クリック（スマホは長押し）で保存できます。</div>`,
+      downloads ? `<span class="sp"></span><button class="primary" data-save>ファイルに保存</button>` : ``);
+    m.addEventListener("click", async e => {
+      if (!e.target.closest("[data-save]")) return;
+      try { const blob = await new Promise(r => canvas.toBlob(r, "image/png")); await downloads.save({ filename: fname, data: blob }); toast("保存しました"); }
+      catch(err) { if (err?.code !== "declined") toast("保存できませんでした: " + (err?.message || err?.code || err)); }
+    });
+  } catch(err) { toast("画像の生成に失敗しました: " + (err?.message || err)); }
+});
+$("#enemy-body").addEventListener("click", async e => {
+  if (!e.target.closest("[data-verify]")) return;
+  const p = period(); p.verified = true;
+  try { await saveMaster({ periods: master.periods }); toast(`${p.label} を確認済みにしました`); } catch(err) { toast("保存に失敗しました: " + (err?.message || err?.code || err)); }
+  scheduleRender();
+});
+
+/* ---------- modals ---------- */
+function openModal(title, body, footer){
+  const root = $("#modal-root");
+  root.innerHTML = `<div class="modal" id="modal"><div class="box" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+    <div class="mh"><h3>${esc(title)}</h3><span class="sp"></span><button class="ghost" data-close>閉じる</button></div>
+    <div class="mb">${body}</div>${footer ? `<div class="mf">${footer}</div>` : ""}</div></div>`;
+  const m = $("#modal");
+  m.addEventListener("click", e => { if (e.target === m || e.target.closest("[data-close]")) closeModal(); });
+  document.addEventListener("keydown", escClose);
+  return m;
+}
+function escClose(e){ if (e.key === "Escape") closeModal(); }
+function closeModal(){ $("#modal-root").innerHTML = ""; document.removeEventListener("keydown", escClose); }
+
+$("#btn-owned").addEventListener("click", () => {
+  const draft = new Set(state.owned);
+  const grid = rank => master.characters.filter(c => c.rank === rank).map(c => cardHtml(c, { cls: draft.has(c.id) ? "own" : "" })).join("");
+  const m = openModal("所持キャラ登録", `
+    <div class="kv" style="margin-bottom:8px;color:var(--muted)">タップで所持／未所持を切り替え。<span id="own-n"></span></div>
+    <div class="sec">★5</div><div class="ownergrid">${grid(5)}</div>
+    <div class="sec">★4</div><div class="ownergrid">${grid(4)}</div>`,
+    `<button data-all="1">全て所持</button><button data-all="0">全て解除</button><span class="sp"></span><button class="primary" data-save>保存</button>`);
+  const upd = () => { $("#own-n", m).textContent = `所持 ${draft.size} / ${master.characters.length}`; };
+  upd();
+  m.addEventListener("click", e => {
+    const card = e.target.closest(".ownergrid .card");
+    if (card) { const id = card.dataset.id; draft.has(id) ? draft.delete(id) : draft.add(id); card.classList.toggle("own", draft.has(id)); upd(); return; }
+    const all = e.target.closest("[data-all]");
+    if (all) { if (all.dataset.all === "1") master.characters.forEach(c => draft.add(c.id)); else draft.clear(); m.querySelectorAll(".ownergrid .card").forEach(el => el.classList.toggle("own", draft.has(el.dataset.id))); upd(); return; }
+    if (e.target.closest("[data-save]")) { state.owned = master.characters.filter(c => draft.has(c.id)).map(c => c.id); closeModal(); commit(); toast(`所持キャラを保存しました（${state.owned.length}人）`); }
+  });
+});
+
+$("#btn-update").addEventListener("click", () => {
+  const m = openModal("総キャラクター更新", `
+    <div class="kv">
+      現在のデータ: <b>${esc(master.origin)}</b>　キャラ <b>${master.characters.length}</b>人 / 期間 <b>${master.periods.length}</b>件<br>
+      最終更新: <b>${esc(master.updatedAt || "—")}</b>　出典: ${esc(master.source || "—")}
+    </div>
+    <div class="sec">1. 共有データを再読込</div>
+    <div class="kv">毎週（木・日曜 21時）の自動更新と、Claude への依頼で書き換わった最新のキャラ一覧・敵情報・2回出撃可を読み直します。<br>
+      手動で頼むときは Claude Code で「<code>終焉マトリクス編成板のキャラ一覧と敵情報を最新にして</code>」と伝えてください。</div>
+    <div class="row"><button class="primary" data-reload ${db ? "" : "disabled"}>最新データを再読込</button>${db ? "" : `<span style="font-size:12px;color:var(--muted)">（この表示環境では共有データに接続できません）</span>`}</div>
+    <div class="sec">2. JSON を貼り付けて取り込み</div>
+    <div class="kv">形式: <code>{"characters":[{"id","name","attr","rank","ver","icon","aliases"}], "periods":[{"id","label","ver","dates","start","end","crisis","twice","circuits","enemies","verified"}], "updatedAt":"..."}</code><br>
+      <code>characters</code> のみ／<code>periods</code> のみでも可。同じ id・名前は上書き、新規は追加されます。</div>
+    <textarea id="imp" rows="6" placeholder='{"characters":[{"id":"061","name":"新キャラ","attr":"回折","rank":5,"ver":"3.8"}]}'></textarea>
+    <div class="row"><button data-import="merge">取り込む（追記・上書き）</button><button data-import="replace" class="danger">全置換</button><span class="sp"></span><button data-export>現在のデータをJSONで表示</button></div>
+    <div id="imp-msg" class="kv" style="margin-top:6px;color:var(--muted)"></div>
+    <div class="sec">3. 編成・所持のバックアップ</div>
+    <textarea id="bk" rows="4" placeholder="ここに編成・所持のJSONを貼り付けて「取り込む」"></textarea>
+    <div class="row"><button data-bk="export">編成・所持をJSONで表示</button><button data-bk="import">編成・所持を取り込む</button></div>
+    <div id="bk-msg" class="kv" style="margin-top:6px;color:var(--muted)"></div>`, ``);
+  m.addEventListener("click", async e => {
+    if (e.target.closest("[data-reload]")) {
+      try {
+        const [c, p] = await Promise.all([db.doc("master/characters").get(), db.doc("master/periods").get()]);
+        const n = applyMasterDocs(c, p);
+        closeModal(); scheduleRender(); toast(n ? `再読込しました（キャラ ${master.characters.length}人 / 期間 ${master.periods.length}件）` : "共有データがまだありません（内蔵データのまま）");
+      } catch(err) { $("#imp-msg", m).textContent = "再読込に失敗しました: " + (err.message || err.code || err); }
+      return;
+    }
+    if (e.target.closest("[data-export]")) { $("#imp", m).value = JSON.stringify({ characters: master.characters, periods: master.periods, updatedAt: master.updatedAt, source: master.source }, null, 1); return; }
+    const bk = e.target.closest("[data-bk]");
+    if (bk) {
+      if (bk.dataset.bk === "export") { $("#bk", m).value = JSON.stringify(stateDoc(), null, 1); return; }
+      let obj; try { obj = JSON.parse($("#bk", m).value); } catch(err) { $("#bk-msg", m).textContent = "JSON の形式が正しくありません: " + err.message; return; }
+      if (!obj || (!obj.plans && !obj.teams && !obj.owned)) { $("#bk-msg", m).textContent = "plans / owned が見つかりません"; return; }
+      if (!confirm("現在の編成・所持をこのJSONの内容で置き換えますか？")) return;
+      pushUndo("バックアップ取込"); applyRemoteState(obj); closeModal(); commit(); toast("編成・所持を取り込みました", undoAction());
+      return;
+    }
+    const imp = e.target.closest("[data-import]"); if (!imp) return;
+    let obj; try { obj = JSON.parse($("#imp", m).value); } catch(err) { $("#imp-msg", m).textContent = "JSON の形式が正しくありません: " + err.message; return; }
+    const res = importData(obj, imp.dataset.import === "replace");
+    if (res.error) { $("#imp-msg", m).textContent = res.error; return; }
+    try { await saveMaster(res.master, "取り込み(JSON)"); } catch(err) { $("#imp-msg", m).textContent = "共有データへの保存に失敗しました（この端末には保存済み）: " + (err.message || err.code || err); }
+    if (!master.periods.find(x => x.id === state.period)) state.period = master.periods[0].id;
+    closeModal(); commit(); toast(`取り込みました: キャラ ${master.characters.length}人 / 期間 ${master.periods.length}件`);
+  });
+});
+function importData(obj, replace){
+  if (!obj || typeof obj !== "object") return { error: "オブジェクトではありません" };
+  let chars = master.characters.slice(), periods = master.periods.slice();
+  if (Array.isArray(obj.characters)) {
+    const inc = obj.characters.filter(c => c && c.name);
+    if (!inc.length && replace) return { error: "characters が空です" };
+    const norm1 = c => ({ id: String(c.id || c.name), name: String(c.name), attr: ATTRS.includes(c.attr) ? c.attr : (ATTRS.includes(c.attribute) ? c.attribute : "物理"), rank: Number(c.rank) === 4 ? 4 : 5, ver: String(c.ver || ""), icon: String(c.icon || c.url || ""), ...(Array.isArray(c.aliases) ? {aliases: c.aliases} : {}), ...(c.upcoming ? {upcoming:true} : {}) });
+    if (replace) chars = inc.map(norm1);
+    else inc.forEach(c => { const n = norm1(c); const i = chars.findIndex(x => x.id === n.id || nameMatch(x, n.name)); if (i >= 0) { const keep = chars[i]; chars[i] = { ...keep, ...n, icon: n.icon || keep.icon }; if (!c.upcoming) delete chars[i].upcoming; } else chars.push(n); });
+  }
+  if (Array.isArray(obj.periods)) {
+    const inc = obj.periods.filter(p => p && p.id && p.label);
+    if (replace) periods = inc.length ? inc : periods;
+    else inc.forEach(p => { const i = periods.findIndex(x => x.id === p.id); if (i >= 0) periods[i] = { ...periods[i], ...p }; else periods.unshift(p); });
+  }
+  if (!Array.isArray(obj.characters) && !Array.isArray(obj.periods)) return { error: "characters または periods が見つかりません" };
+  return { master: { characters: chars, periods, updatedAt: obj.updatedAt || todayStr(), source: obj.source || master.source } };
+}
+
+/* ---------- 管理用: マスタ編集 ---------- */
+const fr = (label, inner) => `<label class="fr"><span>${esc(label)}</span>${inner}</label>`;
+const attrSel = (cls, val) => `<select class="${cls}">${ATTRS.map(a => `<option${a===val?" selected":""}>${a}</option>`).join("")}</select>`;
+const splitList = s => String(s || "").split(/[,、\n]/).map(x => x.trim()).filter(Boolean);
+function nextCharId(){ const mx = master.characters.reduce((m, c) => Math.max(m, parseInt(c.id, 10) || 0), 0); return String(mx + 1).padStart(3, "0"); }
+function nextPeriodId(){ const nums = master.periods.map(p => /^s(\d+)-(\d+)$/.exec(p.id)).filter(Boolean).map(m => [+m[1], +m[2]]); if (!nums.length) return { id: "s2-1", label: "S2-1" }; nums.sort((a, b) => a[0]-b[0] || a[1]-b[1]); const [s, n] = nums[nums.length-1]; return { id: `s${s}-${n+1}`, label: `S${s}-${n+1}` }; }
+
+function openMasterEditor(tab, pick){
+  const m = openModal("マスタ編集", `<div class="tabs"><button data-mtab="period" class="${tab==="period"?"on":""}">期間・敵・2回出撃</button><button data-mtab="char" class="${tab==="char"?"on":""}">キャラクター</button></div><div id="me-body"></div>`, `<span id="me-msg" class="kv" style="color:var(--muted)"></span><span class="sp"></span><button class="danger" id="me-del">削除</button><button class="primary" id="me-save">保存</button>`);
+  const body = $("#me-body", m), msg = $("#me-msg", m);
+  let cur = tab, sel = pick || "";
+  const say = t => { msg.textContent = t; };
+
+  function renderPeriod(){
+    const p = master.periods.find(x => x.id === sel) || null;
+    const nid = nextPeriodId();
+    body.innerHTML = `
+      ${fr("編集する期間", `<select id="pe-sel"><option value="">＋ 新しい期間を追加</option>${master.periods.map(x => `<option value="${esc(x.id)}"${x.id===sel?" selected":""}>${esc(x.label)} ${esc(x.ver)}</option>`).join("")}</select>`)}
+      ${fr("ID", `<input type="text" id="pe-id" value="${esc(p ? p.id : nid.id)}" ${p ? "readonly" : ""}>`)}
+      ${fr("表示名", `<input type="text" id="pe-label" value="${esc(p ? p.label : nid.label)}">`)}
+      ${fr("バージョン", `<input type="text" id="pe-ver" value="${esc(p ? p.ver : "ver3.")}" placeholder="ver3.7">`)}
+      ${fr("期間（表示用）", `<input type="text" id="pe-dates" value="${esc(p?.dates || "")}" placeholder="2026-09-30 05:00 〜 2026-11-04 04:59">`)}
+      ${fr("開始日", `<input type="text" id="pe-start" value="${esc(p?.start || "")}" placeholder="YYYY-MM-DD">`)}
+      ${fr("終了日", `<input type="text" id="pe-end" value="${esc(p?.end || "")}" placeholder="YYYY-MM-DD（次期開始の前日）">`)}
+      ${fr("クライシス担当", `<input type="text" id="pe-crisis" value="${esc((p?.crisis || []).join("、"))}" placeholder="名前を「、」区切り">`)}
+      ${fr("2回出撃可", `<input type="text" id="pe-twice" value="${esc((p?.twice || []).join("、"))}" placeholder="ヒーラー枠＋クライシス担当を「、」区切り">`)}
+      ${fr("増幅回路", `<textarea id="pe-circ" rows="4" placeholder="1行に1つ「名前|本文」">${esc((p?.circuits || []).map(c => `${c.name}|${c.text}`).join("\n"))}</textarea>`)}
+      ${fr("メモ", `<input type="text" id="pe-note" value="${esc(p?.note || "")}">`)}
+      ${fr("確認状態", `<label class="chk"><input type="checkbox" id="pe-verified" ${p?.verified !== false ? "checked" : ""}> 確認済み（外すと「要確認」表示）</label>`)}
+      <div class="sec">敵</div>
+      <div id="pe-enemies">${(p?.enemies || []).map(enemyBlock).join("")}</div>
+      <button class="small" id="pe-addenemy">＋ 敵を追加</button>`;
+    $("#me-del", m).hidden = !p; $("#me-del", m).textContent = "この期間を削除";
+    $("#pe-sel", m).onchange = e => { sel = e.target.value; renderPeriod(); };
+    $("#pe-addenemy", m).onclick = () => { $("#pe-enemies", m).insertAdjacentHTML("beforeend", enemyBlock({})); };
+  }
+  function enemyBlock(e){
+    return `<div class="eblock">
+      ${fr("名前", `<input type="text" class="en-name" value="${esc(e.name || "")}">`)}
+      ${fr("属性", attrSel("en-attr", e.attr || "回折"))}
+      ${fr("画像", `<input type="text" class="en-icon" value="${esc(e.icon || "")}" placeholder="img/b_xxx.webp（任意）">`)}
+      ${fr("効果", `<textarea class="en-desc" rows="6" placeholder="1ラウンド目で有効化&#10;<危機対応·…>&#10;本文&#10;&#10;2ラウンド目で有効化&#10;<危機進化·…>&#10;本文">${esc(e.desc || "")}</textarea>`)}
+      <div class="row"><span class="sp"></span><button class="small danger" data-rm-enemy>この敵を削除</button></div></div>`;
+  }
+  function savePeriod(){
+    const id = $("#pe-id", m).value.trim(); if (!/^[a-z0-9-]+$/.test(id)) { say("IDは半角英数字とハイフンで入力してください（例: s2-3）"); return; }
+    const exists = master.periods.find(x => x.id === id);
+    const enemies = [...body.querySelectorAll("#pe-enemies .eblock")].map(b => ({ name: $(".en-name", b).value.trim(), attr: $(".en-attr", b).value, icon: $(".en-icon", b).value.trim(), desc: $(".en-desc", b).value.trim() })).filter(e => e.name);
+    const circuits = $("#pe-circ", m).value.split("\n").map(l => l.trim()).filter(Boolean).map(l => { const i = l.indexOf("|"); return i >= 0 ? { name: l.slice(0, i).trim(), text: l.slice(i+1).trim() } : { name: l, text: "" }; });
+    const obj = { ...(exists || {}), id, label: $("#pe-label", m).value.trim() || id.toUpperCase(), ver: $("#pe-ver", m).value.trim(), dates: $("#pe-dates", m).value.trim(), start: $("#pe-start", m).value.trim(), end: $("#pe-end", m).value.trim(),
+      crisis: splitList($("#pe-crisis", m).value), twice: splitList($("#pe-twice", m).value), circuits, note: $("#pe-note", m).value.trim(), verified: $("#pe-verified", m).checked, enemies };
+    if (!obj.note) delete obj.note;
+    const periods = master.periods.slice();
+    if (exists) periods[periods.indexOf(exists)] = obj; else periods.unshift(obj);
+    return { periods, updatedAt: todayStr() };
+  }
+
+  function renderChar(){
+    const c = master.characters.find(x => x.id === sel) || null;
+    body.innerHTML = `
+      ${fr("編集するキャラ", `<select id="ce-sel"><option value="">＋ 新規追加</option>${master.characters.map(x => `<option value="${esc(x.id)}"${x.id===sel?" selected":""}>${esc(x.name)}${x.upcoming?"（未実装）":""}</option>`).join("")}</select>`)}
+      ${fr("ID", `<input type="text" id="ce-id" value="${esc(c ? c.id : nextCharId())}" ${c ? "readonly" : ""}>`)}
+      ${fr("名前", `<input type="text" id="ce-name" value="${esc(c?.name || "")}">`)}
+      ${fr("属性", attrSel("", c?.attr || "回折").replace('class=""', 'id="ce-attr"'))}
+      ${fr("レア", `<select id="ce-rank"><option value="5"${(c?.rank ?? 5)===5?" selected":""}>★5</option><option value="4"${c?.rank===4?" selected":""}>★4</option></select>`)}
+      ${fr("実装Ver", `<input type="text" id="ce-ver" value="${esc(c?.ver || "")}" placeholder="3.7">`)}
+      ${fr("状態", `<label class="chk"><input type="checkbox" id="ce-up" ${c?.upcoming ? "checked" : ""}> 未実装（次バージョン以降）</label>`)}
+      ${fr("別表記", `<input type="text" id="ce-alias" value="${esc((c?.aliases || []).join("、"))}" placeholder="表記揺れを「、」区切り">`)}
+      ${fr("アイコン", `<div><img class="icprev" id="ce-prev" src="${esc(c?.icon || "")}" alt="" ${c?.icon ? "" : "hidden"}><input type="text" id="ce-icon" value="${esc(c?.icon || "")}" placeholder="img/c_character_NNN.webp または登録した画像のURL" style="width:auto;min-width:60%"></div>`)}
+      ${fr("画像を登録", assets ? `<input type="file" id="ce-file" accept="image/*"><span class="kv" style="color:var(--muted)">正方形の画像（256px程度）を選ぶと、この管理用アプリに保存してURLを自動入力します</span>` : `<span class="kv" style="color:var(--muted)">この表示環境では画像を登録できません（管理用アプリを claude.ai で開いてください）</span>`)}`;
+    $("#me-del", m).hidden = !c; $("#me-del", m).textContent = "このキャラを削除";
+    $("#ce-sel", m).onchange = e => { sel = e.target.value; renderChar(); };
+    $("#ce-icon", m).oninput = e => { const pv = $("#ce-prev", m); pv.src = e.target.value; pv.hidden = !e.target.value; };
+    const f = $("#ce-file", m);
+    if (f) f.onchange = async e => {
+      const file = e.target.files[0]; if (!file) return;
+      say("画像を登録中…");
+      try { const res = await assets.upload(file); $("#ce-icon", m).value = res.url; $("#ce-prev", m).src = res.url; $("#ce-prev", m).hidden = false; say("画像を登録しました。「保存」で確定します"); }
+      catch(err) { say("画像の登録に失敗しました: " + (err?.message || err?.code || err)); }
+    };
+  }
+  function saveChar(){
+    const id = $("#ce-id", m).value.trim(), name = $("#ce-name", m).value.trim();
+    if (!id || !name) { say("IDと名前は必須です"); return; }
+    const exists = master.characters.find(x => x.id === id);
+    const dup = master.characters.find(x => x.id !== id && nameMatch(x, name));
+    if (dup) { say(`同じ名前のキャラが既にあります（${dup.name} / ID ${dup.id}）`); return; }
+    const obj = { ...(exists || {}), id, name, attr: $("#ce-attr", m).value, rank: Number($("#ce-rank", m).value), ver: $("#ce-ver", m).value.trim(), icon: $("#ce-icon", m).value.trim() };
+    const al = splitList($("#ce-alias", m).value); if (al.length) obj.aliases = al; else delete obj.aliases;
+    if ($("#ce-up", m).checked) obj.upcoming = true; else delete obj.upcoming;
+    const chars = master.characters.slice();
+    if (exists) chars[chars.indexOf(exists)] = obj; else chars.unshift(obj);
+    return { characters: chars, updatedAt: todayStr() };
+  }
+
+  function render(){ m.querySelectorAll("[data-mtab]").forEach(b => b.classList.toggle("on", b.dataset.mtab === cur)); say(""); if (cur === "period") renderPeriod(); else renderChar(); }
+  m.addEventListener("click", async e => {
+    const tb = e.target.closest("[data-mtab]"); if (tb) { cur = tb.dataset.mtab; sel = ""; render(); return; }
+    if (e.target.closest("[data-rm-enemy]")) { e.target.closest(".eblock").remove(); return; }
+    if (e.target.closest("#me-save")) {
+      const patch = cur === "period" ? savePeriod() : saveChar(); if (!patch) return;
+      try { await saveMaster(patch, "マスタ編集"); closeModal(); commit(); toast("マスタを保存しました"); }
+      catch(err) { say("共有データへの保存に失敗しました（この端末には保存済み）: " + (err?.message || err?.code || err)); }
+      return;
+    }
+    if (e.target.closest("#me-del")) {
+      if (cur === "period") { const p = master.periods.find(x => x.id === sel); if (!p || !confirm(`${p.label} を削除しますか？`)) return; const periods = master.periods.filter(x => x !== p); await saveMaster({ periods, updatedAt: todayStr() }, "マスタ編集"); if (state.period === p.id) state.period = master.periods[0]?.id; }
+      else { const c = master.characters.find(x => x.id === sel); if (!c || !confirm(`${c.name} を削除しますか？（編成からも外れます）`)) return; await saveMaster({ characters: master.characters.filter(x => x !== c), updatedAt: todayStr() }, "マスタ編集"); state.owned = state.owned.filter(x => x !== c.id); for (const k in state.plans) state.plans[k].teams.forEach(t => { t.members = t.members.filter(x => x !== c.id); }); }
+      closeModal(); commit(); toast("削除しました");
+    }
+  });
+  render();
+}
+if (IS_ADMIN) {
+  $("#btn-master").addEventListener("click", () => openMasterEditor("period", state.period));
+  $("#btn-public").addEventListener("click", () => {
+    const bundle = JSON.stringify({ characters: master.characters, periods: master.periods, updatedAt: master.updatedAt, source: master.source, defaultPeriod: periodByDate()?.id || state.period }, null, 1);
+    const blobIcons = master.characters.filter(c => /^\/_blob\//.test(c.icon || "")).map(c => c.name);
+    openModal("提供用データ", `
+      <div class="kv">提供用アプリは、このマスタデータを埋め込んだ静的ページとして Claude が公開し直します。<br>
+      Claude Code で「<code>提供用の編成板を最新のマスタで更新して</code>」と伝えると、以下のデータで提供用アプリを再公開します。</div>
+      ${blobIcons.length ? `<div class="warn" style="margin-top:8px"><b>画像</b>管理用アプリに登録した画像（${esc(blobIcons.join("、"))}）は再公開時に提供用へコピーされます。</div>` : ""}
+      <div class="sec">マスタデータ（JSON）</div>
+      <textarea rows="14" readonly>${esc(bundle)}</textarea>`, ``);
+  });
+}
+
+/* ---------- boot ---------- */
+loadLocal();
+try { const t = sessionStorage.getItem("dm_tab"); if (t) setTab(t); } catch(e){}
+applyEnemyPref();
+renderAll();
+connectDb();
+</script>
