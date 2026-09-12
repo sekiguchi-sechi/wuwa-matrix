@@ -4,7 +4,7 @@
 /* ==== 00-const.js ==== */
 /* ---------- 定数 ---------- */
 const TEAM_SIZE = 3;          // 1チームの人数
-const INITIAL_TEAMS = 5;      // 初期・リセット後のチーム数（上限なし）
+const INITIAL_TEAMS = 6;      // 初期・リセット後のチーム数（上限なし）
 const ATTRS = ["回折", "気動", "凝縮", "消滅", "焦熱", "電導", "物理"];
 const NAME_MAX = 20, MEMO_MAX = 120;
 const TOAST_MS = 1800, TOAST_UNDO_MS = 7000;
