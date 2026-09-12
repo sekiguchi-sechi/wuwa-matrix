@@ -86,6 +86,6 @@ async function copyTeamsText() {
   const lines = [`【終焉マトリクス ${p ? p.label + " " + p.ver : ""}】`].concat(teams().map((t, i) =>
     `${teamLabel(t, i)}: ${t.members.map(id => charById(id)?.name || id).join(" / ") || "（空）"}${t.memo ? `　※${t.memo}` : ""}`));
   const text = lines.join("\n");
-  try { await navigator.clipboard.writeText(text); toast("編成をコピーしました"); }
+  try { await navigator.clipboard.writeText(text); toast("テキストをコピーしました"); }
   catch (e) { openModal("編成テキスト", `<textarea rows="12" readonly>${esc(text)}</textarea>`, ``); }
 }
