@@ -1,0 +1,22 @@
+name: check
+# data.json の検証と、docs/ がソースから再生成した結果と一致しているかの確認。
+# ビルド忘れ・壊れた JSON がそのまま公開されるのを防ぐ（GitHub Actions の無料枠内）。
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: validate data.json
+        run: python build.py --check
+      - name: rebuild docs/
+        run: python build.py
+      - name: docs/ must be up to date
+        run: git diff --exit-code -- docs/ || (echo "::error::docs/ が古いです。python build.py を実行してコミットしてください" && exit 1)
