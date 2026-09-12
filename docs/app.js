@@ -205,6 +205,7 @@ function renderTeams() {
           <span class="tno">${i + 1}</span>
           <input type="text" class="tname" value="${esc(t.name)}" placeholder="チーム ${i + 1}" aria-label="チーム名" maxlength="${NAME_MAX}">
           <button class="small" data-act="clear" title="このチームを空にする" ${t.members.length ? "" : "disabled"}>空にする</button>
+          <button class="small danger" data-act="del" title="このチームを削除する">削除</button>
         </div>
         <div class="slots" data-tid="${esc(t.id)}">
           ${t.members.map(id => { const c = charById(id); return c ? cardHtml(c, { over: true }) : `<div class="card" data-id="${esc(id)}"><span class="nm">不明: ${esc(id)}</span></div>`; }).join("")}
@@ -434,6 +435,11 @@ $("#teams").addEventListener("click", e => {
   if (e.target.closest("button[data-act='clear']")) {
     if (!team.members.length) return;
     pushUndo(); team.members = []; commit(); toast(`${teamLabel(team, i)} を空にしました`, undoAction()); return;
+  }
+  if (e.target.closest("button[data-act='del']")) {
+    if (team.members.length && !confirm(`${teamLabel(team, i)}（${team.members.length}人）を削除しますか？`)) return;
+    pushUndo(); teams().splice(i, 1); if (state.activeTeam === team.id) state.activeTeam = null;
+    commit(); toast(`${teamLabel(team, i)} を削除しました`, undoAction()); return;
   }
   const card = e.target.closest(".card");
   if (card) {

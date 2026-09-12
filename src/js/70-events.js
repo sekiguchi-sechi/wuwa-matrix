@@ -9,6 +9,11 @@ $("#teams").addEventListener("click", e => {
     if (!team.members.length) return;
     pushUndo(); team.members = []; commit(); toast(`${teamLabel(team, i)} を空にしました`, undoAction()); return;
   }
+  if (e.target.closest("button[data-act='del']")) {
+    if (team.members.length && !confirm(`${teamLabel(team, i)}（${team.members.length}人）を削除しますか？`)) return;
+    pushUndo(); teams().splice(i, 1); if (state.activeTeam === team.id) state.activeTeam = null;
+    commit(); toast(`${teamLabel(team, i)} を削除しました`, undoAction()); return;
+  }
   const card = e.target.closest(".card");
   if (card) {
     const k = team.members.indexOf(card.dataset.id);
