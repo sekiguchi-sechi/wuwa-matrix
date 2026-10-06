@@ -13,6 +13,7 @@
   vendor/     … src/vendor/（SortableJS, html2canvas）
   img/        … assets/img/
 """
+import hashlib
 import json
 import re
 import shutil
@@ -107,13 +108,17 @@ def build(d):
                 child.unlink()
     DOCS.mkdir(exist_ok=True)
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
-    shutil.copy2(SRC / "index.html", DOCS / "index.html")
     shutil.copy2(SRC / "style.css", DOCS / "style.css")
     js_parts = [f"/* ==== {p.name} ==== */\n{p.read_text(encoding='utf-8')}" for p in sorted((SRC / "js").glob("*.js"))]
     app_js = "/* 生成物: src/js/*.js を build.py が連結したもの。編集は src/ 側で行う */\n(function () {\n\"use strict\";\n" + "\n".join(js_parts) + "\n})();\n"
     (DOCS / "app.js").write_text(app_js, encoding="utf-8")
     data_js = "/* 生成物: data.json を build.py が注入したもの */\nwindow.__DATA__ = " + json.dumps(d, ensure_ascii=False, separators=(",", ":")) + ";\n"
     (DOCS / "data.js").write_text(data_js, encoding="utf-8")
+    # キャッシュ回避: 参照する css/js に内容ハッシュを付ける（更新直後に古い data.js が使われるのを防ぐ）
+    html = (SRC / "index.html").read_text(encoding="utf-8")
+    for name, body in (("style.css", (SRC / "style.css").read_text(encoding="utf-8")), ("app.js", app_js), ("data.js", data_js)):
+        html = html.replace(f'"{name}"', f'"{name}?v={hashlib.sha1(body.encode("utf-8")).hexdigest()[:8]}"')
+    (DOCS / "index.html").write_text(html, encoding="utf-8")
     shutil.copytree(SRC / "vendor", DOCS / "vendor")
     shutil.copytree(ASSETS / "img", DOCS / "img")
 
