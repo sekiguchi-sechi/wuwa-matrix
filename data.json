@@ -15,8 +15,7 @@
    "attr": "電導",
    "rank": 5,
    "ver": "3.7",
-   "icon": "img/c_060.webp",
-   "upcoming": true
+   "icon": "img/c_060.webp"
   },
   {
    "id": "059",
@@ -727,7 +726,7 @@
    ]
   }
  ],
- "updatedAt": "2026-10-09",
+ "updatedAt": "2026-10-29",
  "source": "wikiwiki(鳴潮Wiki*) 共鳴者一覧 https://wikiwiki.jp/w-w/共鳴者一覧 / 終焉マトリクス https://wikiwiki.jp/w-w/終焉マトリクス / Game8 キャラ一覧 https://game8.jp/meicho/608916 / 終焉マトリクス https://game8.jp/meicho/750886",
  "defaultPeriod": "s2-3"
 }
