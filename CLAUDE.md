@@ -33,4 +33,5 @@ GitHub 操作は gh CLI（`C:\Program Files\GitHub CLI\gh.exe`、sekiguchi-sechi
 ## 期の規則（2026-10-07 確認）
 - 新しい挑戦段階（期）は **Ver 配信日の1週間後 05:00 に開始**し、次 Ver 配信日 04:59 に終了する（例: Ver3.6 配信 8/20 → S2-2 は 8/27〜9/30、Ver3.7 配信 9/30 → S2-3 は 10/7〜11/12 見込み）。期の開始を Ver 配信日と同一視しない
 - 攻略サイトの反映は遅い（期開始後も数日〜数週間未掲載のことがある）。ユーザーがゲーム内画面（敵・危機対応/進化・増幅回路・クライシス担当）を提供してくれれば、それを一次情報として data.json に入れてよい（verified:false のまま、note に「ゲーム内画面より」と記す）
+- **日本語サイトより Game8 英語版（Endstate Matrix: Stage Guides https://game8.co/games/Wuthering-Waves/archives/572519 / Reset and Buffs …/572518）が早い**（2026-11-22: Ver3.8 の敵・期間は英語版にだけ載っていた）。WebFetch は 402 になるので Claude in Chrome で開いて読む。英語名→日本語名は要照合（Feilian Beringal=飛廉の大猿, Sigillum=シギルム, Crownless=無冠者, Tune Break=協和破壊, Unison Response=同奏レスポンス, Glacio Chafe=結霜効果）
 - 2回出撃可（twice）の常連ヒーラー枠は ヴェリーナ・ショアキーパー・白芷・卜霊・穂穂・**モーニエ**（S2-1〜S2-3 で毎期）＋ **リリー**（Ver3.8 実装のサポーター、S2-4〜。2026-11-14 ユーザー確認）。これに当期のクライシス担当を加える
