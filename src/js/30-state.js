@@ -3,12 +3,13 @@ const state = {
   period: "",            // 表示中の期間ID
   owned: [],             // 所持キャラID（空 = 未登録扱いで全キャラ表示）
   plans: {},             // { [periodId]: { teams: [...] } } 期間ごとの編成
+  rotations: [],         // 登録したローテ（期間をまたいで共通。65-rotations.js）
   activeTeam: null,      // クリック追加の対象チームID（非永続）
   ui: { showAll: false, showUpcoming: false },
 };
 
 function normTeam(t) {
-  return { id: t.id || uid(), name: t.name || "", memo: t.memo || "", members: Array.isArray(t.members) ? t.members.slice() : [] };
+  return { id: t.id || uid(), name: t.name || "", memo: t.memo || "", rot: t.rot || "", members: Array.isArray(t.members) ? t.members.slice() : [] };
 }
 const newTeams = n => Array.from({ length: n }, () => normTeam({}));
 
@@ -29,7 +30,7 @@ const usedCount = id => teams().reduce((n, t) => n + (t.members.includes(id) ? 1
 const isOver = c => usedCount(c.id) > maxDeploy(c);
 
 /* --- 永続化 --- */
-function stateDoc() { return { v: 3, period: state.period, owned: state.owned, plans: state.plans, ui: state.ui }; }
+function stateDoc() { return { v: 4, period: state.period, owned: state.owned, plans: state.plans, rotations: state.rotations, ui: state.ui }; }
 function hydrate(d) {
   if (!d || typeof d !== "object") return;
   if (d.period) state.period = d.period;
@@ -38,6 +39,7 @@ function hydrate(d) {
     state.plans = {};
     for (const k in d.plans) state.plans[k] = { teams: (d.plans[k].teams || []).map(normTeam) };
   }
+  if (Array.isArray(d.rotations)) state.rotations = d.rotations.map(normRot);
   if (d.ui && typeof d.ui === "object") state.ui = { ...state.ui, showAll: !!d.ui.showAll, showUpcoming: !!d.ui.showUpcoming };
 }
 function loadState() {

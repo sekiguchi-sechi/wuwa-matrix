@@ -1,7 +1,10 @@
 /* ---------- モーダル ---------- */
 let modalReturnFocus = null;
-function openModal(title, body, footer) {
-  modalReturnFocus = document.activeElement;
+/** opts.beforeClose: 閉じる前に呼ばれ、false を返すと閉じない（編集中の破棄確認用） */
+let modalGuard = null;
+function openModal(title, body, footer, opts = {}) {
+  if (!$("#modal-root").innerHTML) modalReturnFocus = document.activeElement;   // モーダル間の遷移では最初の戻り先を保つ
+  modalGuard = opts.beforeClose || null;
   $("#modal-root").innerHTML = `<div class="modal" id="modal"><div class="box" role="dialog" aria-modal="true" aria-label="${esc(title)}">
     <div class="mh"><h3>${esc(title)}</h3><span class="sp"></span><button class="ghost" data-close>閉じる</button></div>
     <div class="mb">${body}</div>${footer ? `<div class="mf">${footer}</div>` : ""}</div></div>`;
@@ -21,7 +24,9 @@ function modalKeys(e) {
   if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
   else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
 }
-function closeModal() {
+function closeModal(force) {
+  if (!force && modalGuard && !modalGuard()) return;
+  modalGuard = null;
   $("#modal-root").innerHTML = "";
   document.removeEventListener("keydown", modalKeys);
   if (modalReturnFocus && modalReturnFocus.focus) modalReturnFocus.focus();
@@ -84,7 +89,7 @@ async function saveAsImage() {
 async function copyTeamsText() {
   const p = period();
   const lines = [`【終焉マトリクス ${p ? p.label + " " + p.ver : ""}】`].concat(teams().map((t, i) =>
-    `${teamLabel(t, i)}: ${t.members.map(id => charById(id)?.name || id).join(" / ") || "（空）"}${t.memo ? `　※${t.memo}` : ""}`));
+    `${teamLabel(t, i)}: ${t.members.map(id => charById(id)?.name || id).join(" / ") || "（空）"}${rotById(t.rot) ? `　［ローテ: ${rotLabel(rotById(t.rot))}］` : ""}${t.memo ? `　※${t.memo}` : ""}`));
   const text = lines.join("\n");
   try { await navigator.clipboard.writeText(text); toast("テキストをコピーしました"); }
   catch (e) { openModal("編成テキスト", `<textarea rows="12" readonly>${esc(text)}</textarea>`, ``); }

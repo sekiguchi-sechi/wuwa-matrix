@@ -62,7 +62,7 @@ function renderTeams() {
           ${t.members.map(id => { const c = charById(id); return c ? cardHtml(c, { over: true }) : `<div class="card" data-id="${esc(id)}"><span class="nm">不明: ${esc(id)}</span></div>`; }).join("")}
           <div class="slotbg" aria-hidden="true">${Array.from({ length: TEAM_SIZE }, () => `<i>空き</i>`).join("")}</div>
         </div>
-        <input type="text" class="tmemo" value="${esc(t.memo)}" placeholder="メモ（ローテ順・狙いなど）" aria-label="メモ" maxlength="${MEMO_MAX}">
+        ${rotRowHtml(t)}
       </div>
     </div>`).join("");
   initSlotSortables();

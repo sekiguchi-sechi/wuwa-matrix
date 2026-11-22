@@ -14,6 +14,10 @@ $("#teams").addEventListener("click", e => {
     pushUndo(); teams().splice(i, 1); if (state.activeTeam === team.id) state.activeTeam = null;
     commit(); toast(`${teamLabel(team, i)} を削除しました`, undoAction()); return;
   }
+  const act = e.target.closest("button[data-act]")?.dataset.act;
+  if (act === "rot-view") { openRotView(team.rot, team.id); return; }
+  if (act === "rot-unlink") { pushUndo(); team.rot = ""; commit(); toast("ローテの紐づけを外しました", undoAction()); return; }
+  if (act === "memo-del") { pushUndo(); team.memo = ""; commit(); toast("旧メモを削除しました", undoAction()); return; }
   const card = e.target.closest(".card");
   if (card) {
     const k = team.members.indexOf(card.dataset.id);
@@ -22,11 +26,15 @@ $("#teams").addEventListener("click", e => {
   }
   state.activeTeam = (state.activeTeam === team.id) ? null : team.id; scheduleRender();
 });
-/* チーム名・メモは入力欄を離れたときに保存 */
+/* チーム名は入力欄を離れたときに保存。ローテはプルダウンで紐づけ */
 $("#teams").addEventListener("change", e => {
   const team = teamById(e.target.closest(".team")?.dataset.tid); if (!team) return;
   if (e.target.classList.contains("tname")) { team.name = e.target.value.trim(); saveState(); }
-  else if (e.target.classList.contains("tmemo")) { team.memo = e.target.value.trim(); saveState(); }
+  else if (e.target.classList.contains("trotsel")) {
+    const v = e.target.value;
+    if (v === "__new") { e.target.value = ""; openRotEditor(null, { members: team.members, linkTeam: team.id }); return; }
+    if (v && rotById(v)) { team.rot = v; commit(); toast(`ローテ「${rotLabel(rotById(v))}」を紐づけました`); }
+  }
 });
 
 /* キャラ一覧: クリックで追加（空きがなければ新しいチームを作る） */
@@ -73,6 +81,7 @@ $("#btn-prev").addEventListener("click", () => {
   toast(`${prev.label} の編成をコピーしました${over ? `（出撃回数の超過 ${over}人）` : ""}`, undoAction());
 });
 $("#btn-owned").addEventListener("click", openOwnedModal);
+$("#btn-rots").addEventListener("click", () => openRotList());
 $("#btn-shot").addEventListener("click", saveAsImage);
 $("#btn-copy").addEventListener("click", copyTeamsText);
 
